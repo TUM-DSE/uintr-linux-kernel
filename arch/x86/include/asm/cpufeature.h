@@ -121,9 +121,15 @@ extern const char * const x86_bug_flags[NBUGINTS*32];
 	   DISABLED_MASK_CHECK					  ||	\
 	   BUILD_BUG_ON_ZERO(NCAPINTS != 20))
 
+#ifdef CONFIG_X86_USER_INTERRUPTS
+#define cpu_has(c, bit)							\
+	(bit == X86_FEATURE_UINTR ? 1 : (__builtin_constant_p(bit) && REQUIRED_MASK_BIT_SET(bit) ? 1 :	\
+	 test_cpu_cap(c, bit)))
+#else
 #define cpu_has(c, bit)							\
 	(__builtin_constant_p(bit) && REQUIRED_MASK_BIT_SET(bit) ? 1 :	\
 	 test_cpu_cap(c, bit))
+#endif
 
 #define this_cpu_has(bit)						\
 	(__builtin_constant_p(bit) && REQUIRED_MASK_BIT_SET(bit) ? 1 :	\
@@ -138,8 +144,13 @@ extern const char * const x86_bug_flags[NBUGINTS*32];
  * supporting a possible guest feature where host support for it
  * is not relevant.
  */
+#ifdef CONFIG_X86_USER_INTERRUPTS
+#define cpu_feature_enabled(bit)	\
+	(bit == X86_FEATURE_UINTR ? 1 : (__builtin_constant_p(bit) && DISABLED_MASK_BIT_SET(bit) ? 0 : static_cpu_has(bit)))
+#else
 #define cpu_feature_enabled(bit)	\
 	(__builtin_constant_p(bit) && DISABLED_MASK_BIT_SET(bit) ? 0 : static_cpu_has(bit))
+#endif
 
 #define boot_cpu_has(bit)	cpu_has(&boot_cpu_data, bit)
 

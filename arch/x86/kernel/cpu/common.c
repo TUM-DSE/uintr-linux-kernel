@@ -394,19 +394,32 @@ __setup("nouintr", setup_disable_uintr);
 
 static void setup_uintr(struct cpuinfo_x86 *c)
 {
-	/* check the boot processor, plus compile options for UINTR. */
+    printk("setup uintr\n");
+
+    // cpu_feature_enabled() and cpu_has() return true if passed X86_FEATURE_UINTR
+
+    /* check the boot processor, plus compile options for UINTR. */
 	if (!cpu_feature_enabled(X86_FEATURE_UINTR))
 		goto disable_uintr;
 
-	/* checks the current processor's cpuid bits: */
+    printk("uintr: feature_enabled\n");
+	
+    /* checks the current processor's cpuid bits: */
 	if (!cpu_has(c, X86_FEATURE_UINTR))
 		goto disable_uintr;
+    
+    printk("uintr: cpu_has\n");
 
+    // We can remove this as it is the only time it is checked
 	/* Confirm XSAVE support for UINTR is present. */
-	if (!cpu_has_xfeatures(XFEATURE_MASK_UINTR, NULL)) {
+	/*
+    if (!cpu_has_xfeatures(XFEATURE_MASK_UINTR, NULL)) {
 		pr_info_once("x86: User Interrupts (UINTR) not enabled. XSAVE support for UINTR is missing.\n");
 		goto clear_uintr_cap;
 	}
+    */
+    
+    printk("uintr: has_xfeatures\n");
 
 	/*
 	 * User Interrupts currently doesn't support PTI. For processors that
@@ -418,6 +431,7 @@ static void setup_uintr(struct cpuinfo_x86 *c)
 		goto clear_uintr_cap;
 	}
 
+    // REMOVE THIS LINE TO MAKE IT BOOT
 	cr4_set_bits(X86_CR4_UINTR);
 	pr_info_once("x86: User Interrupts (UINTR) enabled\n");
 
